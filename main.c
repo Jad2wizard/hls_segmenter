@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <string.h>
 #include "segmenter.h"
+#include "UserCertification.h"
 
 int main(int argc, char** argv)
 {
@@ -20,6 +21,8 @@ int main(int argc, char** argv)
 	FILE* fp = fopen("head","rb");
 	fwrite(extra_data, 1, 3*188, fp);
 	printUsage();
+	
+	initAccountDb(&userDb);
 	
 	if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
@@ -58,6 +61,11 @@ int main(int argc, char** argv)
 		initOption(opt, argv, argc);	
 		opt->extra_data = extra_data;
 		opt->input_file = connfd;
+
 		pthread_create(&pth, NULL, segmenter, (void*)opt);
 	}
+
+	destroyAccountDb(&userDb);
+
+	return 0;
 }

@@ -1,4 +1,5 @@
 #include "segmenter.h"
+#include "UserCertification.h"
 
 
 void* segmenter(void* op)
@@ -33,19 +34,55 @@ void* segmenter(void* op)
 	st.extra_data = opt->extra_data;
 	snprintf(st.prefix, MAX_PREFIX_LENGTH, opt->prefix);
 
-
+	//get user name
+	uint8_t nameLen = 0;
+	int result = recv(&nameLen, 1, 1, opt->input_file);
+	if(result == -1)
+	{
+		printf("Recv nameLen wrong\n");
+		free(opt);
+		return;
+	}
+	
+	if(nameLen > MAX_USER_NAME_LENGTH)
+	{
+		printf("User name is too long %d\n", nameLen);
+		return;
+	}
+	result = recv(opt->prefix, 1, nameLen, opt->input_file);	
+	opt->prefix[nameLen] = '\0';
+	if(result == -1)
+	{
+		printf("Recv name wrong\n");
+		free(opt);
+		return;
+	}
+	
+	uint8_t dbSearchResult = findAvailableSlot(&userDb, opt->prefix, opt->input_file);
+	if(dbSearchResult == 1)
+	{
+		printf("The connection is full\n");
+		return;
+	}
+	else if(dbSearchResult == 2)
+	{
+		printf("The user name is duplicate\n");
+		return;
+	}
 	openTSFile(st.ts_file_index, 0, &st);
 	LiveM3u8* livem3u8 = createLiveM3u8(st.hls_list_size);
 	initLiveM3u8(livem3u8, st.segment_duration, st.prefix,st.live_url,st.ondemand_url);
 	
 	while(1)
 	{
-		int result = recv(buffer, 1, 188, opt->input_file);
+		result = recv(buffer, 1, 188, opt->input_file);
 		if(result != -1)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
+			deleteFromDb(&userDb, opt->prefix);
 			destroy(livem3u8);
+			free(opt);
 			return;
 		}
 	}
