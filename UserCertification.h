@@ -5,7 +5,7 @@
 #include<pthread.h> 
 
 #define MAX_USER_NUM 150
-#define MAX_USER_NAME_LENGTH 10
+#define MAX_USER_NAME_LENGTH 20
 
 typedef struct
 {

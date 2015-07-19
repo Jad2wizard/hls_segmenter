@@ -32,42 +32,45 @@ void* segmenter(void* op)
 	st.live_url = opt->live_url;
 	st.ondemand_url = opt->ondemand_url;
 	st.extra_data = opt->extra_data;
-	snprintf(st.prefix, MAX_PREFIX_LENGTH, opt->prefix);
+	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s",  opt->prefix);
 
 	//get user name
+	char idPacket[188];
+	int result = recv(&idPacket, 188, 1, opt->input_file);
 	uint8_t nameLen = 0;
-	int result = recv(&nameLen, 1, 1, opt->input_file);
 	if(result == -1)
 	{
 		printf("Recv nameLen wrong\n");
+		close(opt->input_file);
 		free(opt);
-		return;
+		return NULL;
 	}
-	
+	nameLen = idPacket[0];
+
 	if(nameLen > MAX_USER_NAME_LENGTH)
 	{
 		printf("User name is too long %d\n", nameLen);
-		return;
-	}
-	result = recv(opt->prefix, 1, nameLen, opt->input_file);	
-	opt->prefix[nameLen] = '\0';
-	if(result == -1)
-	{
-		printf("Recv name wrong\n");
+		close(opt->input_file);
 		free(opt);
-		return;
+		return NULL;
 	}
+	snprintf(opt->prefix, MAX_USER_NAME_LENGTH, "%s", idPacket + 1);
+	opt->prefix[nameLen] = '\0';
 	
 	uint8_t dbSearchResult = findAvailableSlot(&userDb, opt->prefix, opt->input_file);
 	if(dbSearchResult == 1)
 	{
 		printf("The connection is full\n");
-		return;
+		close(opt->input_file);
+		free(opt);
+		return NULL;
 	}
 	else if(dbSearchResult == 2)
 	{
 		printf("The user name is duplicate\n");
-		return;
+		close(opt->input_file);
+		free(opt);
+		return NULL;
 	}
 	openTSFile(st.ts_file_index, 0, &st);
 	LiveM3u8* livem3u8 = createLiveM3u8(st.hls_list_size);
@@ -81,13 +84,14 @@ void* segmenter(void* op)
 		else
 		{
 			deleteFromDb(&userDb, opt->prefix);
+			close(opt->input_file);
 			destroy(livem3u8);
 			free(opt);
-			return;
+			return NULL;
 		}
 	}
 	printf("%d\t%d\t%d\n",st.pmt_pid,st.video_pid,st.audio_pid);
-	return;
+	return NULL;
 }
 
 int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)

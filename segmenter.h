@@ -3,7 +3,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include "M3u8Util.h"
-#define MAX_PREFIX_LENGTH 10
+#include "UserCertification.h"
 typedef unsigned char uint8_t;
 enum stream_type{AUDIO_STREAM, VIDEO_STREAM};
 typedef struct option_t{
@@ -12,7 +12,7 @@ typedef struct option_t{
 	char* output_filename;
 	float segment_duration;
 	short hls_list_size;
-	char prefix[MAX_PREFIX_LENGTH+1];
+	char prefix[MAX_USER_NAME_LENGTH+1];
 	uint8_t* extra_data;
 	char* live_url;
 	char* ondemand_url;
@@ -21,7 +21,7 @@ typedef struct stream_t{
 	int video_pid;
 	int audio_pid;
 	int pmt_pid;
-	char prefix[MAX_PREFIX_LENGTH+1];
+	char prefix[MAX_USER_NAME_LENGTH+1];
 	char* live_url;
 	char* ondemand_url;
 	double segment_time;
