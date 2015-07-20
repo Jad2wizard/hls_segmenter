@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include "segmenter.h"
 #include "UserCertification.h"
 

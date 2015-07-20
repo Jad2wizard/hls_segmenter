@@ -1,8 +1,9 @@
 #ifndef USER_CERTIFICATION
 #define USER_CERTIFICATION
 
-#include<unistd.h>  
-#include<pthread.h> 
+#include <unistd.h>  
+#include <pthread.h> 
+#include <stdlib.h>
 
 #define MAX_USER_NUM 150
 #define MAX_USER_NAME_LENGTH 20
