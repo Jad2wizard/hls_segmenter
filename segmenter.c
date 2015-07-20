@@ -224,11 +224,11 @@ void initOption(option* opt, char** argv, int argc)
 		return;
 	for(int i=1;i<argc;++i)
 	{
-		if(argv[i]=="-hls_list_size"){opt->hls_list_size = atoi(argv[++i]);}
-		if(argv[i]=="-segment_duration"){opt->segment_duration = atof(argv[++i]);}
-		if(argv[i]=="-live_url"){opt->live_url = argv[++i];}
-		if(argv[i]=="-ondemand_url"){opt->ondemand_url = argv[++i];}
-		if(argv[i]=="-prefix"){++i; snprintf(opt->prefix, strlen(argv[i]), argv[i]);}
+		if(strcmp(argv[i],"-hls_list_size")==0){i++;opt->hls_list_size = atoi(argv[i]);}
+		if(strcmp(argv[i],"-segment_duration")==0){i++;opt->segment_duration = atof(argv[i]);}
+		if(strcmp(argv[i],"-live_url")==0){i++;opt->live_url = argv[i];}
+		if(strcmp(argv[i],"-ondemand_url")==0){i++;opt->ondemand_url = argv[i];}
+		if(strcmp(argv[i],"-prefix")==0){++i; snprintf(opt->prefix, strlen(argv[i]), argv[i]);}
 	}
 	return;
 }

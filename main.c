@@ -61,7 +61,6 @@ int main(int argc, char** argv)
 		initOption(opt, argv, argc);	
 		opt->extra_data = extra_data;
 		opt->input_file = connfd;
-
 		pthread_create(&pth, NULL, segmenter, (void*)opt);
 	}
 
