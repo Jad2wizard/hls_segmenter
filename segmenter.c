@@ -219,7 +219,9 @@ void setDefaultOption(option* opt, char* cap)
 	snprintf(opt->prefix, 8,"default");
 	
 	opt->live_url = cap;
+	strcat(opt->live_url, "/live");
 	opt->ondemand_url = cap;
+	strcat(opt->ondemand_url, "/ondemand");
 }
 
 void initOption(option* opt, char** argv, int argc)
@@ -242,8 +244,8 @@ void printUsage()
 	printf("\n================================================Usage===========================================\n");
 	printf("\t-hls_list_size(int): set the segment number of playlist entries. Default value is 3\n");
 	printf("\t-segment_duration(float): set the segment length in seconds. Default value is 2.0\n");
-	printf("\t-live_url: set the absolute address of segments. Default value is the current absolute path\n");
-	printf("\t-live_url: set the absolute address of segments. Default value is the current absolute path\n");
+	printf("\t-live_url: set the absolute address of segments. Default value is the current absolute path/live\n");
+	printf("\t-ondemand_url: set the absolute address of segments. Default value is the current absolute path/ondemand\n");
 	printf("\t-prefix: set the prefix of segment and m3u8 file. Default value is \"default\"\n");
 	printf("\n================================================Usage===========================================\n");
 }
