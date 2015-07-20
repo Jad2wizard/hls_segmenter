@@ -58,8 +58,8 @@ void* segmenter(void* op)
 		free(opt);
 		return NULL;
 	}
-	snprintf(opt->prefix, MAX_USER_NAME_LENGTH, "%s", idPacket + 1);
-	opt->prefix[nameLen] = '\0';
+	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s", idPacket + 1);
+	st.prefix[nameLen] = '\0';
 	
 	printf("The user id is %s\n", idPacket + 1);
 	
