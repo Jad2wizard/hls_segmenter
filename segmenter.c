@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
 #include "segmenter.h"
 #include "UserCertification.h"
 
@@ -36,11 +39,12 @@ void* segmenter(void* op)
 
 	//get user name
 	char idPacket[188];
-	int result = recv(&idPacket, 188, 1, opt->input_file);
+	int result = recv(opt->input_file, &idPacket, 188, 0);
 	uint8_t nameLen = 0;
-	if(result == -1)
+	if(result <= 0)
 	{
-		printf("Recv nameLen wrong\n");
+		printf("Recv name length wrong\n");
+   		printf("Recv name length wrong: %s(error: %d)\n",strerror(errno), errno);
 		close(opt->input_file);
 		free(opt);
 		return NULL;
@@ -56,6 +60,8 @@ void* segmenter(void* op)
 	}
 	snprintf(opt->prefix, MAX_USER_NAME_LENGTH, "%s", idPacket + 1);
 	opt->prefix[nameLen] = '\0';
+	
+	printf("The user id is %s\n", idPacket + 1);
 	
 	uint8_t dbSearchResult = findAvailableSlot(&userDb, opt->prefix, opt->input_file);
 	if(dbSearchResult == 1)
@@ -78,8 +84,8 @@ void* segmenter(void* op)
 	
 	while(1)
 	{
-		result = recv(buffer, 1, 188, opt->input_file);
-		if(result != -1)
+		result = recv(opt->input_file, buffer, 188, 0);
+		if(result != 0)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
