@@ -2,7 +2,7 @@
 #define SEGMENTERUTIL_H
 #include <stdint.h>
 
-#define ENTRY_LENGTH 30
+#define ENTRY_LENGTH 50
 #define HEADER_LENGTH 100
 typedef struct 
 {

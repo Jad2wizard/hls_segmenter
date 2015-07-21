@@ -188,6 +188,7 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 	char s[50];
 	sprintf(s,"%s/%s%d.ts",st->live_url,st->prefix,live_index);
 	st->live_file_pointer = fopen(s, "wb");
+	//printf("S %s\n",s);
 	//free(s);
 	//s = (char*)malloc(strlen(st->ondemand_url)+15);
 	if(st->live_file_pointer == NULL)

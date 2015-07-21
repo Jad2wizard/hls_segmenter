@@ -15,6 +15,7 @@
 #define TS_FILE_NAME_TEMPLATE "%s%d.ts\n"
 #define LIVE_M3U8_HEADER_TEMPLATE   "#EXTM3U8\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:%d\n#EXT-X-MEDIA-SEQUENCE:1\n"
 #define ONDEMAND_M3U8_END_TEMPLATE "#EXT-X-ENDLIST\n"
+#define HOST_ADDRESS "http://live.imoocs.org/"
 //#define snprintf _snprintf
 LiveM3u8* createLiveM3u8(uint8_t tsNum)
 {
@@ -60,7 +61,7 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 {
 	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, maxDuration);
 	snprintf(m3u8->liveM3u8,  ENTRY_LENGTH, "%s/%s.m3u8", path, prefix);
-	snprintf(m3u8->tsPrefix, ENTRY_LENGTH, "%s/%s", path, prefix);
+	snprintf(m3u8->tsPrefix, ENTRY_LENGTH, "%s%s/%s", HOST_ADDRESS, path, prefix);
 	snprintf(m3u8->onDemandM3u8, ENTRY_LENGTH, "%s/%s.m3u8", onDemandPath, prefix);
 	snprintf(m3u8->tsOnDemandPrefix, ENTRY_LENGTH, "%s/%s", onDemandPath, prefix);
 	m3u8->onDemandIndex = 0;
