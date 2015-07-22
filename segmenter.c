@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include "segmenter.h"
 #include "UserCertification.h"
 
+#define TS_PACKET 188
 
 void* segmenter(void* op)
 {
@@ -21,7 +24,7 @@ void* segmenter(void* op)
 	fseek(opt.input_file, 0, SEEK_SET);
 */
 	option* opt = (option*)op;
-	uint8_t* buffer = (uint8_t*)malloc(188);
+	uint8_t* buffer = (uint8_t*)malloc(TS_PACKET);
 	stream st;
 	st.segment_duration = opt->segment_duration;
 	st.hls_list_size = opt->hls_list_size;
@@ -38,10 +41,10 @@ void* segmenter(void* op)
 	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s",  opt->prefix);
 
 	//get user name
-	char idPacket[188];
-	int result = recv(opt->input_file, &idPacket, 188, 0);
+	char idPacket[TS_PACKET];
+	int result = recv(opt->input_file, &idPacket, TS_PACKET, MSG_WAITALL);
 	uint8_t nameLen = 0;
-	if(result <= 0)
+	if(result !=  TS_PACKET)
 	{
 		printf("Recv name length wrong\n");
    		printf("Recv name length wrong: %s(error: %d)\n",strerror(errno), errno);
@@ -84,11 +87,12 @@ void* segmenter(void* op)
 	
 	while(1)
 	{
-		result = recv(opt->input_file, buffer, 188, 0);
-		if(result != 0)
+		result = recv(opt->input_file, buffer, TS_PACKET, MSG_WAITALL);
+		if(result ==  TS_PACKET)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
+			printf("User %s exit\n", opt->prefix);
 			deleteFromDb(&userDb, opt->prefix);
 			close(opt->input_file);
 			destroy(livem3u8);
@@ -154,9 +158,9 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 			}
 		}
 	}
-	fwrite(buf,1,188, st->live_file_pointer);
+	fwrite(buf,1,TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);
-	fwrite(buf,1,188, st->ondemand_file_pointer);
+	fwrite(buf,1,TS_PACKET, st->ondemand_file_pointer);
 	fflush(st->ondemand_file_pointer);
 }
 
@@ -196,7 +200,7 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 		printf("open live ts file %d error\n", live_index);
 		return 0;
 	}
-	fwrite(st->extra_data, 1, 3*188, st->live_file_pointer);
+	fwrite(st->extra_data, 1, 3*TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);	
 	
 	sprintf(s,"%s/%s%d.ts",st->ondemand_url,st->prefix,ondemand_index);
@@ -207,7 +211,7 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 		printf("open ondemand ts file %d error\n", live_index);
 		return 0;
 	}
-	fwrite(st->extra_data, 1, 3*188, st->ondemand_file_pointer);
+	fwrite(st->extra_data, 1, 3*TS_PACKET, st->ondemand_file_pointer);
 	fflush(st->ondemand_file_pointer);
 	
 	return 1;
