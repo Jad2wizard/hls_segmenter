@@ -81,7 +81,7 @@ void* segmenter(void* op)
 		free(opt);
 		return NULL;
 	}
-	openTSFile(st.ts_file_index, 0, &st);
+	openTSFile(0, 0, &st);
 	LiveM3u8* livem3u8 = createLiveM3u8(st.hls_list_size);
 	initLiveM3u8(livem3u8, st.segment_duration, st.prefix,st.live_url,st.ondemand_url);
 	
@@ -150,9 +150,9 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 			{
 				fclose(st->live_file_pointer);
 				fclose(st->ondemand_file_pointer);
-				updateLiveM3u8File(livem3u8, st->ts_file_index%st->hls_list_size, (st->segment_time-st->prev_segment_time));
+				updateLiveM3u8File(livem3u8, st->ts_file_index, (st->segment_time-st->prev_segment_time));
 				st->ts_file_index++;
-				openTSFile(st->ts_file_index%st->hls_list_size, st->ts_file_index,  st);
+				openTSFile(st->ts_file_index, st->ts_file_index,  st);
 				
 				st->prev_segment_time = st->segment_time;
 			}
@@ -160,8 +160,6 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 	}
 	fwrite(buf,1,TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);
-	fwrite(buf,1,TS_PACKET, st->ondemand_file_pointer);
-	fflush(st->ondemand_file_pointer);
 }
 
 int isKeyFrame(uint8_t* buf)
@@ -203,17 +201,6 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 	fwrite(st->extra_data, 1, 3*TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);	
 	
-	sprintf(s,"%s/%s%d.ts",st->ondemand_url,st->prefix,ondemand_index);
-	st->ondemand_file_pointer = fopen(s, "wb");
-	//free(s);
-	if(st->ondemand_file_pointer == NULL)
-	{
-		printf("open ondemand ts file %d error\n", live_index);
-		return 0;
-	}
-	fwrite(st->extra_data, 1, 3*TS_PACKET, st->ondemand_file_pointer);
-	fflush(st->ondemand_file_pointer);
-	
 	return 1;
 }
 
@@ -225,8 +212,6 @@ void setDefaultOption(option* opt, char* cap)
 	
 	opt->live_url = cap;
 	strcat(opt->live_url, "/live");
-	opt->ondemand_url = cap;
-	strcat(opt->ondemand_url, "/ondemand");
 }
 
 void initOption(option* opt, char** argv, int argc)
@@ -250,7 +235,6 @@ void printUsage()
 	printf("\t-hls_list_size(int): set the segment number of playlist entries. Default value is 3\n");
 	printf("\t-segment_duration(float): set the segment length in seconds. Default value is 2.0\n");
 	printf("\t-live_url: set the absolute address of segments. Default value is the current absolute path/live\n");
-	printf("\t-ondemand_url: set the absolute address of segments. Default value is the current absolute path/ondemand\n");
 	printf("\t-prefix: set the prefix of segment and m3u8 file. Default value is \"default\"\n");
 	printf("\n================================================Usage===========================================\n");
 }
