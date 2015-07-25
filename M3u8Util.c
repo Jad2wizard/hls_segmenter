@@ -21,11 +21,20 @@ LiveM3u8* createLiveM3u8(uint8_t tsNum)
 {
 	LiveM3u8* ret = (LiveM3u8*)malloc(sizeof(LiveM3u8));
 	ret->tsNum = tsNum;
-	ret->entry = (TsEntry**)malloc(tsNum*sizeof(TsEntry*));
-	for(int i = 0; i < tsNum; ++i)
+
+	// init the cycle list
+	ret->oldEntry = (TsEntry*)malloc(sizeof(TsEntry));
+	TsEntry* previous = ret->oldEntry;
+	for(int i = 1; i < tsNum; ++i)
 	{
-		ret->entry[i] = (TsEntry*)malloc(sizeof(TsEntry));
+		TsEntry* current = (TsEntry*)malloc(sizeof(TsEntry));
+		previous->next = current;
+		current->prev = previous;
+		previous = current;
 	}
+	previous->next = ret->oldEntry;
+	ret->oldEntry->prev = previous;
+
 	return ret;
 }
 
@@ -40,11 +49,12 @@ void writeToFile(LiveM3u8* m3u8)
 	}
 	fwrite(m3u8->header, strlen(m3u8->header), 1, fp);
 
-	for(int i = 0; i < m3u8->tsNum; ++i)
+	TsEntry* entry = m3u8->oldEntry;
 	{
-		fwrite(m3u8->entry[i]->duration, strlen(m3u8->entry[i]->duration), 1, fp);
-		fwrite(m3u8->entry[i]->tsFile, strlen(m3u8->entry[i]->tsFile), 1, fp);
-	}
+		fwrite(entry->duration, strlen(entry->duration), 1, fp);
+		fwrite(entry->tsFile, strlen(entry->tsFile), 1, fp);
+		entry = entry->next;
+	}while(entry != m3u8->oldEntry);
 	fclose(fp);
 
 	if((fp = fopen(m3u8->onDemandM3u8, "a")) == NULL)
@@ -59,19 +69,20 @@ void writeToFile(LiveM3u8* m3u8)
 
 void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const char* path, char*  onDemandPath)
 {
+	//onDemandPath is not used any more
 	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, maxDuration);
 	snprintf(m3u8->liveM3u8,  ENTRY_LENGTH, "%s/%s.m3u8", path, prefix);
 	snprintf(m3u8->tsPrefix, ENTRY_LENGTH, "%s%s/%s", HOST_ADDRESS, path, prefix);
-	snprintf(m3u8->onDemandM3u8, ENTRY_LENGTH, "%s/%s.m3u8", onDemandPath, prefix);
-	snprintf(m3u8->tsOnDemandPrefix, ENTRY_LENGTH, "%s/%s", onDemandPath, prefix);
-	m3u8->onDemandIndex = 0;
+	snprintf(m3u8->onDemandM3u8, ENTRY_LENGTH, "%s/%sDemand.m3u8", path, prefix);
+	snprintf(m3u8->tsOnDemandPrefix, ENTRY_LENGTH, "%s/%s", path, prefix);
 
-	for(int i= 0; i < m3u8->tsNum; ++i)
+	TsEntry* entry = m3u8->oldEntry;
+	do
 	{
-		TsEntry* entry = m3u8->entry[i];
 		snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
-		snprintf(entry->tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsPrefix, i);
-	}
+		snprintf(entry->tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsPrefix, 0);
+		entry = entry->next;
+	}while(entry != m3u8->oldEntry);
 
 	//write the onDemand header
 	FILE* fp = NULL;
@@ -88,14 +99,13 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 
 void updateLiveM3u8File(LiveM3u8* m3u8, int index, double maxDuration)
 {
-	TsEntry* entry = m3u8->entry[index];
+	TsEntry* entry = m3u8->oldEntry;
 	snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
 	snprintf(entry->tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsPrefix, index);
 	snprintf(m3u8->onDemandEntry.duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
-	snprintf(m3u8->onDemandEntry.tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsOnDemandPrefix, m3u8->onDemandIndex);
-
+	snprintf(m3u8->onDemandEntry.tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsOnDemandPrefix, index);
+	m3u8->oldEntry = m3u8->oldEntry->next;
 	writeToFile(m3u8);
-	++m3u8->onDemandIndex;
 }
 
 void destroy(LiveM3u8* m3u8Ptr)
@@ -109,10 +119,14 @@ void destroy(LiveM3u8* m3u8Ptr)
 	}
 	fwrite(ONDEMAND_M3U8_END_TEMPLATE, strlen(ONDEMAND_M3U8_END_TEMPLATE), 1, fp);
 	fclose(fp);
-	for(int i = 0; i < m3u8Ptr->tsNum; ++i)
+	
+	//free cycle list
+	TsEntry* current = m3u8Ptr->oldEntry;
+	do
 	{
-		free(m3u8Ptr->entry[i]);
-	}
-	free(m3u8Ptr->entry);
+		TsEntry* next = current->next;
+		free(current);
+		current = next;
+	}while(current != m3u8Ptr->oldEntry);
 	free(m3u8Ptr);
 }
