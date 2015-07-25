@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	struct sockaddr_in servaddr;
 	uint8_t* extra_data = (uint8_t*)malloc(3*188);
 	FILE* fp = fopen("head","rb");
-	fwrite(extra_data, 1, 3*188, fp);
+	fread(extra_data, 1, 3*188, fp);
 	printUsage();
 	
 	initAccountDb(&userDb);
