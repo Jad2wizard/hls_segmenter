@@ -4,19 +4,20 @@
 
 #define ENTRY_LENGTH 50
 #define HEADER_LENGTH 100
-typedef struct 
+typedef struct TsEntry
 {
 	char duration[ENTRY_LENGTH];
 	char tsFile[ENTRY_LENGTH];
+	struct TsEntry* prev;
+	struct TsEntry* next;
 } TsEntry;
 typedef struct
 {
 	uint8_t tsNum;
-	TsEntry** entry;
+	TsEntry* oldEntry;//it points to the oldest ts file in a cycle list
 	char header[HEADER_LENGTH];
 	char liveM3u8[ENTRY_LENGTH];
 	char tsPrefix[ENTRY_LENGTH];
-	int onDemandIndex;
 	TsEntry onDemandEntry;
 	char onDemandPath[ENTRY_LENGTH];
 	char onDemandM3u8[ENTRY_LENGTH];
