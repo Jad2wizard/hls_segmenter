@@ -149,7 +149,6 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 			if(is_key_frame && (st->segment_time - st->prev_segment_time)>= (st->segment_duration-0.5))
 			{
 				fclose(st->live_file_pointer);
-				fclose(st->ondemand_file_pointer);
 				updateLiveM3u8File(livem3u8, st->ts_file_index, (st->segment_time-st->prev_segment_time));
 				st->ts_file_index++;
 				openTSFile(st->ts_file_index, st->ts_file_index,  st);
