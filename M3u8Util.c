@@ -50,6 +50,7 @@ void writeToFile(LiveM3u8* m3u8)
 	fwrite(m3u8->header, strlen(m3u8->header), 1, fp);
 
 	TsEntry* entry = m3u8->oldEntry;
+	do
 	{
 		fwrite(entry->duration, strlen(entry->duration), 1, fp);
 		fwrite(entry->tsFile, strlen(entry->tsFile), 1, fp);
@@ -74,7 +75,7 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 	snprintf(m3u8->liveM3u8,  ENTRY_LENGTH, "%s/%s.m3u8", path, prefix);
 	snprintf(m3u8->tsPrefix, ENTRY_LENGTH, "%s%s/%s", HOST_ADDRESS, path, prefix);
 	snprintf(m3u8->onDemandM3u8, ENTRY_LENGTH, "%s/%sDemand.m3u8", path, prefix);
-	snprintf(m3u8->tsOnDemandPrefix, ENTRY_LENGTH, "%s/%s", path, prefix);
+	snprintf(m3u8->tsOnDemandPrefix, ENTRY_LENGTH, "%s%s/%s", HOST_ADDRESS, path, prefix);
 
 	TsEntry* entry = m3u8->oldEntry;
 	do
