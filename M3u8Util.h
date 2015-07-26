@@ -13,7 +13,8 @@ typedef struct TsEntry
 } TsEntry;
 typedef struct
 {
-	uint8_t tsNum;
+	int8_t tsNum;
+	uint8_t maxDuration;
 	TsEntry* oldEntry;//it points to the oldest ts file in a cycle list
 	char header[HEADER_LENGTH];
 	char liveM3u8[ENTRY_LENGTH];

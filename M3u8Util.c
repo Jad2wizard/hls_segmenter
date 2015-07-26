@@ -13,7 +13,7 @@
 
 #define TS_DURATION_TEMPLATE "#EXTINF:%3f,\n"
 #define TS_FILE_NAME_TEMPLATE "%s%d.ts\n"
-#define LIVE_M3U8_HEADER_TEMPLATE   "#EXTM3U8\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:%d\n#EXT-X-MEDIA-SEQUENCE:1\n"
+#define LIVE_M3U8_HEADER_TEMPLATE   "#EXTM3U8\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:%d\n#EXT-X-MEDIA-SEQUENCE:%d\n"
 #define ONDEMAND_M3U8_END_TEMPLATE "#EXT-X-ENDLIST\n"
 #define HOST_ADDRESS "http://live.imoocs.org/"
 //#define snprintf _snprintf
@@ -70,8 +70,9 @@ void writeToFile(LiveM3u8* m3u8)
 
 void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const char* path, char*  onDemandPath)
 {
+	m3u8->maxDuration = maxDuration;
 	//onDemandPath is not used any more
-	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, maxDuration);
+	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, m3u8->maxDuration, 0);
 	snprintf(m3u8->liveM3u8,  ENTRY_LENGTH, "%s/%s.m3u8", path, prefix);
 	snprintf(m3u8->tsPrefix, ENTRY_LENGTH, "%s%s/%s", HOST_ADDRESS, path, prefix);
 	snprintf(m3u8->onDemandM3u8, ENTRY_LENGTH, "%s/%sDemand.m3u8", path, prefix);
@@ -100,6 +101,10 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 
 void updateLiveM3u8File(LiveM3u8* m3u8, int index, double maxDuration)
 {
+	int m3u8Sequence = index - m3u8->tsNum;
+	m3u8Sequence = m3u8Sequence > 0 ? m3u8Sequence : 0;
+	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, m3u8->maxDuration, m3u8Sequence);
+
 	TsEntry* entry = m3u8->oldEntry;
 	snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
 	snprintf(entry->tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsPrefix, index);
