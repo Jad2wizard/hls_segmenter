@@ -32,7 +32,7 @@ void* segmenter(void* op)
 	st.pmt_pid=-1;
 	st.video_pid=-1;
 	st.audio_pid=-1;
-	st.frame_rate_v = 30;
+	st.frame_rate_v = 10;
 	st.frame_rate_a = 20;
 	st.ts_file_index = 0;
 	st.live_url = opt->live_url;
@@ -144,16 +144,15 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 		if(1 == ((buf[1]>>6)&0x01))
 		{
 			st->segment_time += 1.0/st->frame_rate_v;
+			printf("delta segment time is %lf\n", st->segment_time - st->prev_segment_time);
 			is_frame_start = 1;
 			is_key_frame = isKeyFrame(buf);
 			if(is_key_frame && (st->segment_time - st->prev_segment_time)>= (st->segment_duration-0.5))
 			{
 				fclose(st->live_file_pointer);
-				fclose(st->ondemand_file_pointer);
 				updateLiveM3u8File(livem3u8, st->ts_file_index, (st->segment_time-st->prev_segment_time));
 				st->ts_file_index++;
 				openTSFile(st->ts_file_index, st->ts_file_index,  st);
-				
 				st->prev_segment_time = st->segment_time;
 			}
 		}
