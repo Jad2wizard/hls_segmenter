@@ -93,7 +93,7 @@ void* segmenter(void* op)
 		else
 		{
 			printf("User %s exit\n", st.prefix);
-			deleteFromDb(&userDb, opt->prefix);
+			deleteFromDb(&userDb, st.prefix);
 			close(opt->input_file);
 			destroy(livem3u8);
 			free(opt);
