@@ -50,9 +50,9 @@ int findAvailableSlot(accountDb* db, char* name, int fd)
 
 	if(availableSlot != MAX_USER_NUM)
 	{
-		db->userEntries[i] = malloc(sizeof(userAccount));
-		db->userEntries[i]->fd = fd;
-		snprintf(db->userEntries[i]->userName, MAX_USER_NAME_LENGTH + 1,"%s", name);
+		db->userEntries[availableSlot] = malloc(sizeof(userAccount));
+		db->userEntries[availableSlot]->fd = fd;
+		snprintf(db->userEntries[availableSlot]->userName, MAX_USER_NAME_LENGTH + 1,"%s", name);
 		pthread_mutex_unlock(&db->dbLock);
 		return 0;
 
