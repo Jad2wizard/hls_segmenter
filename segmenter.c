@@ -92,7 +92,7 @@ void* segmenter(void* op)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
-			printf("User %s exit\n", st->prefix);
+			printf("User %s exit\n", st.prefix);
 			deleteFromDb(&userDb, opt->prefix);
 			close(opt->input_file);
 			destroy(livem3u8);
@@ -144,7 +144,7 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 		if(1 == ((buf[1]>>6)&0x01))
 		{
 			st->segment_time += 1.0/st->frame_rate_v;
-			printf("delta segment time is %lf\n", st->segment_time - st->prev_segment_time);
+			//printf("delta segment time is %lf\n", st->segment_time - st->prev_segment_time);
 			is_frame_start = 1;
 			is_key_frame = isKeyFrame(buf);
 			if(is_key_frame && (st->segment_time - st->prev_segment_time)>= (st->segment_duration-0.5))
