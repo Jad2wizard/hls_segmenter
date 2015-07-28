@@ -66,7 +66,7 @@ void* segmenter(void* op)
 	
 	printf("The user id is %s\n", idPacket + 1);
 	
-	uint8_t dbSearchResult = findAvailableSlot(&userDb, opt->prefix, opt->input_file);
+	uint8_t dbSearchResult = findAvailableSlot(&userDb, st.prefix, opt->input_file);
 	if(dbSearchResult == 1)
 	{
 		printf("The connection is full\n");

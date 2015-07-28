@@ -28,17 +28,15 @@ void destroyAccountDb(accountDb* db)
 //return 2, if name is duplicate
 int findAvailableSlot(accountDb* db, char* name, int fd)
 {
+	int availableSlot = MAX_USER_NUM;	
 	pthread_mutex_lock(&db->dbLock);
 
 	for(int i = 0; i < MAX_USER_NUM; ++i)
 	{
 		if(db->userEntries[i] == NULL)
 		{
-			db->userEntries[i] = malloc(sizeof(userAccount));
-			db->userEntries[i]->fd = fd;
-			snprintf(db->userEntries[i]->userName, MAX_USER_NAME_LENGTH + 1,"%s", name);
-			pthread_mutex_unlock(&db->dbLock);
-			return 0;
+			if(availableSlot == MAX_USER_NUM)
+				availableSlot = i;
 		}
 		else
 		{
@@ -48,6 +46,16 @@ int findAvailableSlot(accountDb* db, char* name, int fd)
 				return 2;
 			}
 		}
+	}
+
+	if(availableSlot != MAX_USER_NUM)
+	{
+		db->userEntries[i] = malloc(sizeof(userAccount));
+		db->userEntries[i]->fd = fd;
+		snprintf(db->userEntries[i]->userName, MAX_USER_NAME_LENGTH + 1,"%s", name);
+		pthread_mutex_unlock(&db->dbLock);
+		return 0;
+
 	}
 
 	pthread_mutex_unlock(&db->dbLock);
@@ -66,6 +74,7 @@ int deleteFromDb(accountDb* db, const char* name)
 			if(strcmp(name, db->userEntries[i]->userName) == 0)
 			{
 				free(db->userEntries[i]);
+				db->userEntries[i] = NULL;
 				pthread_mutex_unlock(&db->dbLock);
 				return 0;
 			}
@@ -75,5 +84,3 @@ int deleteFromDb(accountDb* db, const char* name)
 	pthread_mutex_unlock(&db->dbLock);
 	return 1;
 }
-
-
