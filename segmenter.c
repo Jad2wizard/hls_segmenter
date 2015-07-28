@@ -92,7 +92,7 @@ void* segmenter(void* op)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
-			printf("User %s exit\n", opt->prefix);
+			printf("User %s exit\n", st->prefix);
 			deleteFromDb(&userDb, opt->prefix);
 			close(opt->input_file);
 			destroy(livem3u8);
