@@ -12,6 +12,9 @@
 int main(int argc, char** argv)
 {
 	//need to parse from arguments
+#if PRINT_LOG
+	fp_log = fopen("/root/hls_segmenter.log", "wb");
+#endif
 	short port = 1234;
 	char current_absolute_path[100];
 	realpath("./", current_absolute_path);

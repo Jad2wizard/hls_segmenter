@@ -4,6 +4,10 @@
 #include<stdlib.h>
 #include "M3u8Util.h"
 #include "UserCertification.h"
+#define PRINT_LOG 1
+#if PRINT_LOG
+	FILE* fp_log;
+#endif
 typedef unsigned char uint8_t;
 enum stream_type{AUDIO_STREAM, VIDEO_STREAM};
 typedef struct option_t{

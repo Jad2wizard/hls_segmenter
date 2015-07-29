@@ -111,6 +111,7 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 	int is_video = 0;
 	int is_audio = 0;
 	int is_frame_start = 0;
+	static int frame_num = 0;
 	if(st->getPID==0 && pid==0)
 	{
 		st->pmt_pid = 0x1FFF&(((buf[15]<<3)<<5)|buf[16]);
@@ -147,6 +148,16 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 			//printf("delta segment time is %lf\n", st->segment_time - st->prev_segment_time);
 			is_frame_start = 1;
 			is_key_frame = isKeyFrame(buf);
+#if PRINT_LOG
+			frame_num++;
+			fprintf(fp_log, "Current TS segment file index is: %d\t", st->ts_file_index);
+			fprintf(fp_log, "Current frame number is: %d\t",frame_num);
+			if(is_key_frame)
+				fprintf(fp_log, "this frame is a key frame\t");
+			else
+				fprintf(fp_log, "this frame is not a key fraeme\t");
+			fprintf(fp_log, "current segment time is %f\n",(st->segment_time-st->prev_segment_time));
+#endif
 			if(is_key_frame && (st->segment_time - st->prev_segment_time)>= (st->segment_duration-0.5))
 			{
 				fclose(st->live_file_pointer);
