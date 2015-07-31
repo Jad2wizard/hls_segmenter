@@ -129,7 +129,7 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 				pos=pos+5;
 				continue;
 			}
-			if(buf[pos]==0x03)
+			if(buf[pos]==0x0F)
 			{
 				st->audio_pid = ((buf[pos+1]<<8)|buf[pos+2])&0x1FFF;
 				pos=pos+5;
