@@ -191,6 +191,19 @@ int isKeyFrame(uint8_t* buf)
 			}
 		}
 	}
+	else
+	{
+		for(int i=4;i<184;i++)
+		{		
+			if((buf[i]==0x00)&&(buf[i+1]==0x00)&&(buf[i+2]==0x00)&&(buf[i+3]==0x01)&&(buf[i+4]==0x09))
+			{
+				if(buf[i+10]==0x67)
+					return 1;
+				else
+					return 0;
+			}
+		}
+	}
 	return 0;
 }
 
