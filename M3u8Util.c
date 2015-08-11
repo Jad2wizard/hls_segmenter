@@ -103,7 +103,7 @@ void updateLiveM3u8File(LiveM3u8* m3u8, int index, double maxDuration)
 {
 	int m3u8Sequence = index - m3u8->tsNum;
 	m3u8Sequence = m3u8Sequence > 0 ? m3u8Sequence : 0;
-	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, m3u8->maxDuration, m3u8Sequence);
+	snprintf(m3u8->header, HEADER_LENGTH, LIVE_M3U8_HEADER_TEMPLATE, m3u8->maxDuration, m3u8Sequence + 1);
 
 	TsEntry* entry = m3u8->oldEntry;
 	snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
