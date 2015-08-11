@@ -8,21 +8,11 @@
 
 #define TS_PACKET 188
 
+static int ff_index = 0;
+static int pat_index = 0;
+static int pmt_index = 0;
 void* segmenter(void* op)
 {
-/*	option opt;
-	opt.input_filename = "channel.ts";
-	opt.input_file = fopen(opt.input_filename,"rb");
-	opt.live_url = "./live";
-	opt.ondemand_url = "./ondemand";
-	opt.prefix = "test";
-	opt.segment_duration = 5;
-	opt.hls_list_size = 5;
-*/	
-/*	fseek(opt.input_file, 0, SEEK_END);
-	int file_size = ftell(opt.input_file);
-	fseek(opt.input_file, 0, SEEK_SET);
-*/
 	option* opt = (option*)op;
 	uint8_t* buffer = (uint8_t*)malloc(TS_PACKET);
 	stream st;
@@ -138,7 +128,21 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 			pos++;
 		}
 	}
-
+	if(pid == 0x11)
+	{
+		buf[3] = (buf[3]&0xF0) + ff_index;
+		ff_index =  (++ff_index)%16;
+	}
+	if(pid == 0)
+	{
+		buf[3] = (buf[3]&0xF0) + pat_index;
+		pat_index =  (++pat_index)%16;
+	}
+	if(pid == st->pmt_pid)
+	{
+		buf[3] = (buf[3]&0xF0) + pmt_index;
+		pmt_index =  (++pmt_index)%16;
+	}
 	if(pid == st->video_pid)
 	{
 		is_video = 1;
@@ -221,6 +225,13 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 		printf("open live ts file %d error\n", live_index);
 		return 0;
 	}
+	st->extra_data[3] = (st->extra_data[3]&0xF0) + ff_index;
+	st->extra_data[191] = (st->extra_data[191]&0xF0) + pat_index;
+	st->extra_data[379] = (st->extra_data[379]&0xF0) + pmt_index;
+	ff_index =  (++ff_index)%16;
+	pat_index =  (++pat_index)%16;
+	pmt_index =  (++pmt_index)%16;
+	
 	fwrite(st->extra_data, 1, 3*TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);	
 	
