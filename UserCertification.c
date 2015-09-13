@@ -11,6 +11,7 @@ void initAccountDb(accountDb* db)
 	{
 		db->userEntries[i] = NULL;
 	}
+	db->clientNum = 0;
 }
 
 void destroyAccountDb(accountDb* db)
@@ -53,6 +54,7 @@ int findAvailableSlot(accountDb* db, char* name, int fd)
 		db->userEntries[availableSlot] = malloc(sizeof(userAccount));
 		db->userEntries[availableSlot]->fd = fd;
 		snprintf(db->userEntries[availableSlot]->userName, MAX_USER_NAME_LENGTH + 1,"%s", name);
+		db->clientNum++;
 		pthread_mutex_unlock(&db->dbLock);
 		return 0;
 
@@ -81,6 +83,17 @@ int deleteFromDb(accountDb* db, const char* name)
 		}
 	}
 
+	db->clientNum--;
 	pthread_mutex_unlock(&db->dbLock);
 	return 1;
+}
+
+char getClientNum(accountDb* db)
+{
+	char ret = 0;
+	pthread_mutex_lock(&db->dbLock);
+	ret = db->clientNum;
+	pthread_mutex_unlock(&db->dbLock);
+
+	return ret;
 }

@@ -4,6 +4,7 @@
 
 #define ENTRY_LENGTH 50
 #define HEADER_LENGTH 100
+#define TS_SEG_NUM_MAX 10000  //it comes from 2Mb/s bitrate of video, size of tsSeg is 188byte, so about 10000 times
 typedef struct TsEntry
 {
 	char duration[ENTRY_LENGTH];
@@ -23,6 +24,10 @@ typedef struct
 	char onDemandPath[ENTRY_LENGTH];
 	char onDemandM3u8[ENTRY_LENGTH];
 	char tsOnDemandPrefix[ENTRY_LENGTH];
+	//here we use this member to count the received tsSeg numbers
+	//when it equals to TS_SEG_NUM_MAX, it will be set 0 again
+	//It is used to send the server's info periodly. It should use timestamp for more accuracy, but in case of overhead of systemcall of time, we just count the number
+	int  tsSegNum;
 } LiveM3u8;
 
 

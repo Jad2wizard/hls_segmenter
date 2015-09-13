@@ -20,6 +20,7 @@ typedef struct
 {
 	userAccount* userEntries[MAX_USER_NUM];
 	pthread_mutex_t dbLock;
+	char clientNum;
 } accountDb;
 
 
@@ -33,4 +34,6 @@ int findAvailableSlot(accountDb* db, char* name, int fd);
 
 
 int deleteFromDb(accountDb* db, const char* name);
+
+char getClientNum(accountDb* db);
 #endif

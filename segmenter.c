@@ -89,6 +89,17 @@ void* segmenter(void* op)
 			free(opt);
 			return NULL;
 		}
+		++livem3u8->tsSegNum;
+		if(livem3u8->tsSegNum == TS_SEG_NUM_MAX)
+		{
+			//send the client num here
+			char clientNum = getClientNum(&userDb);
+			if(send(opt->input_file, &clientNum, 1, 0) < 0)
+			{
+				printf("Use %s can't send heartbeat info!\n", st.prefix);
+			}
+			livem3u8->tsSegNum = 0;
+		}
 	}
 	printf("%d\t%d\t%d\n",st.pmt_pid,st.video_pid,st.audio_pid);
 	return NULL;

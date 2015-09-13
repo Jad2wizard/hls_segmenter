@@ -97,6 +97,7 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 	fclose(fp);
 
 	writeToFile(m3u8);
+	m3u8->tsSegNum = 0;
 }
 
 void updateLiveM3u8File(LiveM3u8* m3u8, int index, double maxDuration)
