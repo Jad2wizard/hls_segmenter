@@ -12,6 +12,9 @@ typedef struct
 {
 	char userName[MAX_USER_NAME_LENGTH + 1];
 	int fd;
+	//the next two member is used to accomplish the goal that when the client reconnecting with the same id, the segNum will continue instad become to 0
+	int live;//0 not live; 1 live
+	int segNum;
 } userAccount;
 
 
@@ -30,10 +33,10 @@ void initAccountDb(accountDb* db);
 void destroyAccountDb(accountDb* db);
 
 
-int findAvailableSlot(accountDb* db, char* name, int fd);
+userAccount* findAvailableSlot(accountDb* db, char* name, int fd);
 
 
-int deleteFromDb(accountDb* db, const char* name);
+int deleteFromDb(accountDb* db, const char* name, int segNum);
 
 char getClientNum(accountDb* db);
 #endif

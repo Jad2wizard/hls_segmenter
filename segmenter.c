@@ -5,8 +5,13 @@
 #include <sys/socket.h>
 #include "segmenter.h"
 #include "UserCertification.h"
+#include <string.h>
 
 #define TS_PACKET 188
+
+int isKeyFrame(uint8_t* buf);
+int openTSFile(int live_index, int ondemand_index, stream* st);
+
 
 static int ff_index = 0;
 static int pat_index = 0;
@@ -56,21 +61,17 @@ void* segmenter(void* op)
 	
 	printf("The user id is %s\n", idPacket + 1);
 	
-	uint8_t dbSearchResult = findAvailableSlot(&userDb, st.prefix, opt->input_file);
-	if(dbSearchResult == 1)
+	userAccount* account = findAvailableSlot(&userDb, st.prefix, opt->input_file);
+	if(account == NULL)
 	{
-		printf("The connection is full\n");
+		printf("The connection is full or the id already exits\n");
 		close(opt->input_file);
 		free(opt);
 		return NULL;
 	}
-	else if(dbSearchResult == 2)
-	{
-		printf("The user name is duplicate\n");
-		close(opt->input_file);
-		free(opt);
-		return NULL;
-	}
+	//the ts file index continue after the index of the last connection;
+	st.ts_file_index = account->segNum;
+
 	openTSFile(0, 0, &st);
 	LiveM3u8* livem3u8 = createLiveM3u8(st.hls_list_size);
 	initLiveM3u8(livem3u8, st.segment_duration, st.prefix,st.live_url,st.ondemand_url);
@@ -83,7 +84,7 @@ void* segmenter(void* op)
 		else
 		{
 			printf("User %s exit\n", st.prefix);
-			deleteFromDb(&userDb, st.prefix);
+			deleteFromDb(&userDb, st.prefix, st.ts_file_index);
 			close(opt->input_file);
 			destroy(livem3u8);
 			free(opt);
@@ -269,7 +270,7 @@ void initOption(option* opt, char** argv, int argc)
 		if(strcmp(argv[i],"-segment_duration")==0){i++;opt->segment_duration = atof(argv[i]);}
 		if(strcmp(argv[i],"-live_url")==0){i++;opt->live_url = argv[i];}
 		if(strcmp(argv[i],"-ondemand_url")==0){i++;opt->ondemand_url = argv[i];}
-		if(strcmp(argv[i],"-prefix")==0){++i; snprintf(opt->prefix, strlen(argv[i]), argv[i]);}
+		if(strcmp(argv[i],"-prefix")==0){++i; snprintf(opt->prefix, strlen(argv[i]), "%s", argv[i]);}
 	}
 	return;
 }

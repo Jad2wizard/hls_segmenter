@@ -81,7 +81,7 @@ void initLiveM3u8(LiveM3u8* m3u8, uint8_t maxDuration, const char* prefix, const
 	TsEntry* entry = m3u8->oldEntry;
 	do
 	{
-		snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, maxDuration);
+		snprintf(entry->duration, ENTRY_LENGTH, TS_DURATION_TEMPLATE, (double)maxDuration);
 		snprintf(entry->tsFile, ENTRY_LENGTH, TS_FILE_NAME_TEMPLATE, m3u8->tsPrefix, 0);
 		entry = entry->next;
 	}while(entry != m3u8->oldEntry);

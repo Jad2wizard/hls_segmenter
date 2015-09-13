@@ -44,4 +44,5 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8);
 void* segmenter(void*);
 void initOption(option* opt, char** argv, int argc);
 void setDefaultOption(option*, char*);
+void printUsage();
 #endif
