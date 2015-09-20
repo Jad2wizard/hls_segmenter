@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
 #include "segmenter.h"
 #include "UserCertification.h"
 #include <string.h>
@@ -60,6 +62,18 @@ void* segmenter(void* op)
 	st.prefix[nameLen] = '\0';
 	
 	printf("The user id is %s\n", idPacket + 1);
+
+	const char chOpt = 1;
+	int nErr=setsockopt(opt->input_file, IPPROTO_TCP, TCP_NODELAY, &chOpt, sizeof(char));   
+	if(nErr < 0)
+	{
+		printf("setsockopt error \n");
+		deleteFromDb(&userDb, st.prefix, st.ts_file_index);
+		close(opt->input_file);
+		free(opt);
+		return NULL;
+	}
+
 	
 	userAccount* account = findAvailableSlot(&userDb, st.prefix, opt->input_file);
 	if(account == NULL)
