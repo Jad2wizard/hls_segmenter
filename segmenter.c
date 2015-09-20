@@ -37,6 +37,19 @@ void* segmenter(void* op)
 	st.extra_data = opt->extra_data;
 	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s",  opt->prefix);
 
+	int chOpt = 1;
+	int nErr=setsockopt(opt->input_file, IPPROTO_TCP, TCP_NODELAY, (char*)&chOpt, sizeof(int));   
+	if(nErr < 0)
+	{
+   		printf("setsockopt wrong: %s(error: %d)\n",strerror(errno), errno);
+		deleteFromDb(&userDb, st.prefix, st.ts_file_index);
+		close(opt->input_file);
+		free(opt);
+		return NULL;
+	}
+
+
+
 	//get user name
 	char idPacket[TS_PACKET];
 	int result = recv(opt->input_file, &idPacket, TS_PACKET, MSG_WAITALL);
@@ -63,16 +76,6 @@ void* segmenter(void* op)
 	
 	printf("The user id is %s\n", idPacket + 1);
 
-	const char chOpt = 1;
-	int nErr=setsockopt(opt->input_file, IPPROTO_TCP, TCP_NODELAY, &chOpt, sizeof(char));   
-	if(nErr < 0)
-	{
-		printf("setsockopt error \n");
-		deleteFromDb(&userDb, st.prefix, st.ts_file_index);
-		close(opt->input_file);
-		free(opt);
-		return NULL;
-	}
 
 	
 	userAccount* account = findAvailableSlot(&userDb, st.prefix, opt->input_file);
