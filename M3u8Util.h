@@ -4,7 +4,7 @@
 
 #define ENTRY_LENGTH 50
 #define HEADER_LENGTH 100
-#define TS_SEG_NUM_MAX 10000  //it comes from 2Mb/s bitrate of video, size of tsSeg is 188byte, so about 10000 times
+#define TS_SEG_NUM_MAX 1000  //it comes from 2Mb/s bitrate of video, size of tsSeg is 188byte, so about 10000 times
 typedef struct TsEntry
 {
 	char duration[ENTRY_LENGTH];

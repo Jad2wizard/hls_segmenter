@@ -99,6 +99,7 @@ void* segmenter(void* op)
 			{
 				printf("Use %s can't send heartbeat info!\n", st.prefix);
 			}
+			printf("Send HeartBeat\n");
 			livem3u8->tsSegNum = 0;
 		}
 	}
