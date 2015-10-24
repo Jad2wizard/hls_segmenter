@@ -38,7 +38,7 @@ void* segmenter(void* op)
 	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s",  opt->prefix);
 
 	int chOpt = 1;
-	int nErr=setsockopt(opt->input_file, IPPROTO_TCP, TCP_NODELAY, (char*)&chOpt, sizeof(int));   
+	int nErr=setsockopt(opt->input_file, IPPROTO_TCP, TCP_NODELAY, (char*)&chOpt, sizeof(int));
 	if(nErr < 0)
 	{
    		printf("setsockopt wrong: %s(error: %d)\n",strerror(errno), errno);
@@ -73,11 +73,11 @@ void* segmenter(void* op)
 	}
 	snprintf(st.prefix, MAX_USER_NAME_LENGTH, "%s", idPacket + 1);
 	st.prefix[nameLen] = '\0';
-	
+
 	printf("The user id is %s\n", idPacket + 1);
 
 
-	
+
 	userAccount* account = findAvailableSlot(&userDb, st.prefix, opt->input_file);
 	if(account == NULL)
 	{
@@ -92,7 +92,7 @@ void* segmenter(void* op)
 	openTSFile(0, 0, &st);
 	LiveM3u8* livem3u8 = createLiveM3u8(st.hls_list_size);
 	initLiveM3u8(livem3u8, st.segment_duration, st.prefix,st.live_url,st.ondemand_url);
-	
+
 	while(1)
 	{
 		result = recv(opt->input_file, buffer, TS_PACKET, MSG_WAITALL);
@@ -116,7 +116,7 @@ void* segmenter(void* op)
 			{
 				printf("Use %s can't send heartbeat info!\n", st.prefix);
 			}
-			printf("Send HeartBeat\n");
+			//printf("Send HeartBeat\n");
 			livem3u8->tsSegNum = 0;
 		}
 	}
@@ -208,14 +208,14 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 
 int isKeyFrame(uint8_t* buf)
 {
-	if(0==((buf[3]>>4)&0x01))	
+	if(0==((buf[3]>>4)&0x01))
 		return 0;
-	
+
 	if(2==((buf[3]>>4)&0x02))
 	{
 		int adaption_length = buf[4];
 		for(int i=5+adaption_length;i<184;i++)
-		{		
+		{
 			if((buf[i]==0x00)&&(buf[i+1]==0x00)&&(buf[i+2]==0x00)&&(buf[i+3]==0x01)&&(buf[i+4]==0x09))
 			{
 				if(buf[i+10]==0x67)
@@ -228,7 +228,7 @@ int isKeyFrame(uint8_t* buf)
 	else
 	{
 		for(int i=4;i<184;i++)
-		{		
+		{
 			if((buf[i]==0x00)&&(buf[i+1]==0x00)&&(buf[i+2]==0x00)&&(buf[i+3]==0x01)&&(buf[i+4]==0x09))
 			{
 				if(buf[i+10]==0x67)
@@ -261,10 +261,10 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 	ff_index =  (++ff_index)%16;
 	pat_index =  (++pat_index)%16;
 	pmt_index =  (++pmt_index)%16;
-	
+
 	fwrite(st->extra_data, 1, 3*TS_PACKET, st->live_file_pointer);
-	fflush(st->live_file_pointer);	
-	
+	fflush(st->live_file_pointer);
+
 	return 1;
 }
 
@@ -273,7 +273,7 @@ void setDefaultOption(option* opt, char* cap)
 	opt->segment_duration = 2;
 	opt->hls_list_size = 3;
 	snprintf(opt->prefix, 8,"default");
-	
+
 	opt->live_url = cap;
 	strcat(opt->live_url, "/live");
 }
