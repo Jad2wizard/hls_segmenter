@@ -268,14 +268,17 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 	return 1;
 }
 
-void setDefaultOption(option* opt, char* cap)
+void setDefaultOption(option* opt, char* cap, int flag)
 {
 	opt->segment_duration = 2;
 	opt->hls_list_size = 3;
 	snprintf(opt->prefix, 8,"default");
 
 	opt->live_url = cap;
-	strcat(opt->live_url, "/live");
+	if(!flag)
+	{
+		strcat(opt->live_url, "/live");
+	}
 }
 
 void initOption(option* opt, char** argv, int argc)

@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 	short port = 1234;
 	char current_absolute_path[100];
 	realpath("./", current_absolute_path);
+	int isSetDefaultPath = 0;
 	printf("%s\n",current_absolute_path);
 	int listenfd, connfd;
 	struct sockaddr_in servaddr;
@@ -61,7 +62,8 @@ int main(int argc, char** argv)
 		pthread_t pth;
 	//	hlsSegmentInfo* info = malloc(sizeof(hlsSegmentInfo));
 		option* opt = (option*)malloc(sizeof(option));
-		setDefaultOption(opt, current_absolute_path);
+		setDefaultOption(opt, current_absolute_path, isSetDefaultPath);
+		isSetDefaultPath = 1;
 		initOption(opt, argv, argc);	
 		opt->extra_data = extra_data;
 		opt->input_file = connfd;
