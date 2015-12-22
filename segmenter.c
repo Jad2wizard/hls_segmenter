@@ -18,10 +18,35 @@ int openTSFile(int live_index, int ondemand_index, stream* st);
 static int ff_index = 0;
 static int pat_index = 0;
 static int pmt_index = 0;
+
+//1 ok
+//0 eof
+//-1 error
+int recvTsPacket(int fd, char* buffer)
+{
+    int toRead = TS_PACKET;
+    int readed = 0;
+    int ret = -1;
+
+    while(toRead != 0)
+    {
+        ret = read(fd, buffer, toRead);
+        if(ret <= 0)
+        {
+            return ret;
+        }
+
+        buffer += ret;
+        toRead -= ret;
+    }
+
+    return 1;
+}
+
 void* segmenter(void* op)
 {
 	option* opt = (option*)op;
-	uint8_t* buffer = (uint8_t*)malloc(TS_PACKET);
+	char* buffer = (char*)malloc(TS_PACKET);//Actually there is no need to malloc
 	stream st;
 	st.segment_duration = opt->segment_duration;
 	st.hls_list_size = opt->hls_list_size;
@@ -44,6 +69,7 @@ void* segmenter(void* op)
    		printf("setsockopt wrong: %s(error: %d)\n",strerror(errno), errno);
 		deleteFromDb(&userDb, st.prefix, st.ts_file_index);
 		close(opt->input_file);
+        free(buffer);
 		free(opt);
 		return NULL;
 	}
@@ -52,13 +78,14 @@ void* segmenter(void* op)
 
 	//get user name
 	char idPacket[TS_PACKET];
-	int result = recv(opt->input_file, &idPacket, TS_PACKET, MSG_WAITALL);
+	int result = recvTsPacket(opt->input_file, idPacket);
 	uint8_t nameLen = 0;
-	if(result !=  TS_PACKET)
+	if(result !=  1)
 	{
 		printf("Recv name length wrong\n");
    		printf("Recv name length wrong: %s(error: %d)\n",strerror(errno), errno);
 		close(opt->input_file);
+        free(buffer);
 		free(opt);
 		return NULL;
 	}
@@ -68,6 +95,7 @@ void* segmenter(void* op)
 	{
 		printf("User name is too long %d\n", nameLen);
 		close(opt->input_file);
+        free(buffer);
 		free(opt);
 		return NULL;
 	}
@@ -83,6 +111,7 @@ void* segmenter(void* op)
 	{
 		printf("The connection is full or the id already exits\n");
 		close(opt->input_file);
+        free(buffer);
 		free(opt);
 		return NULL;
 	}
@@ -95,8 +124,8 @@ void* segmenter(void* op)
 
 	while(1)
 	{
-		result = recv(opt->input_file, buffer, TS_PACKET, MSG_WAITALL);
-		if(result ==  TS_PACKET)
+		result = recvTsPacket(opt->input_file, buffer);
+		if(result ==  1)
 			parseOneTS(buffer, &st, livem3u8);
 		else
 		{
@@ -104,6 +133,7 @@ void* segmenter(void* op)
 			deleteFromDb(&userDb, st.prefix, st.ts_file_index);
 			close(opt->input_file);
 			destroy(livem3u8);
+            free(buffer);
 			free(opt);
 			return NULL;
 		}
