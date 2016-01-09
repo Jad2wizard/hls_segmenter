@@ -15,14 +15,14 @@ int isKeyFrame(uint8_t* buf);
 int openTSFile(int live_index, int ondemand_index, stream* st);
 
 
-static int ff_index = 0;
-static int pat_index = 0;
-static int pmt_index = 0;
 void* segmenter(void* op)
 {
 	option* opt = (option*)op;
 	uint8_t* buffer = (uint8_t*)malloc(TS_PACKET);
 	stream st;
+	st.ff_index = 0;
+	st.pat_index = 0;
+	st.pmt_index = 0;
 	st.segment_duration = opt->segment_duration;
 	st.hls_list_size = opt->hls_list_size;
 	st.getPID=0;
@@ -67,6 +67,9 @@ void* segmenter(void* op)
 	if(nameLen > MAX_USER_NAME_LENGTH)
 	{
 		printf("User name is too long %d\n", nameLen);
+	//	snprintf(st.prefix, MAX_USER_NAME_LENGTH,"%s",idPacket + 1);
+	//	st.prefix[nameLen] = '\0';
+	//	printf("The error user id is %s\n",idPacket + 1);
 		close(opt->input_file);
 		free(opt);
 		return NULL;
@@ -96,6 +99,7 @@ void* segmenter(void* op)
 	while(1)
 	{
 		result = recv(opt->input_file, buffer, TS_PACKET, MSG_WAITALL);
+	//	printf("for test, the recv ts packet is %d\n", result);
 		if(result ==  TS_PACKET)
 			parseOneTS(buffer, &st, livem3u8);
 		else
@@ -160,18 +164,18 @@ int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8)
 	}
 	if(pid == 0x11)
 	{
-		buf[3] = (buf[3]&0xF0) + ff_index;
-		ff_index =  (++ff_index)%16;
+		buf[3] = (buf[3]&0xF0) + st->ff_index;
+		st->ff_index =  (++st->ff_index)%16;
 	}
 	if(pid == 0)
 	{
-		buf[3] = (buf[3]&0xF0) + pat_index;
-		pat_index =  (++pat_index)%16;
+		buf[3] = (buf[3]&0xF0) + st->pat_index;
+		st->pat_index =  (++st->pat_index)%16;
 	}
 	if(pid == st->pmt_pid)
 	{
-		buf[3] = (buf[3]&0xF0) + pmt_index;
-		pmt_index =  (++pmt_index)%16;
+		buf[3] = (buf[3]&0xF0) + st->pmt_index;
+		st->pmt_index =  (++st->pmt_index)%16;
 	}
 	if(pid == st->video_pid)
 	{
@@ -255,12 +259,12 @@ int openTSFile(int live_index, int ondemand_index, stream* st)
 		printf("open live ts file %d error\n", live_index);
 		return 0;
 	}
-	st->extra_data[3] = (st->extra_data[3]&0xF0) + ff_index;
-	st->extra_data[191] = (st->extra_data[191]&0xF0) + pat_index;
-	st->extra_data[379] = (st->extra_data[379]&0xF0) + pmt_index;
-	ff_index =  (++ff_index)%16;
-	pat_index =  (++pat_index)%16;
-	pmt_index =  (++pmt_index)%16;
+	st->extra_data[3] = (st->extra_data[3]&0xF0) + st->ff_index;
+	st->extra_data[191] = (st->extra_data[191]&0xF0) + st->pat_index;
+	st->extra_data[379] = (st->extra_data[379]&0xF0) + st->pmt_index;
+	st->ff_index =  (++st->ff_index)%16;
+	st->pat_index =  (++st->pat_index)%16;
+	st->pmt_index =  (++st->pmt_index)%16;
 
 	fwrite(st->extra_data, 1, 3*TS_PACKET, st->live_file_pointer);
 	fflush(st->live_file_pointer);

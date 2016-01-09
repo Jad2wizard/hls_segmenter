@@ -39,6 +39,9 @@ typedef struct stream_t{
 	uint8_t* extra_data;
 	FILE* live_file_pointer;
 	FILE* ondemand_file_pointer;
+	int ff_index;
+	int pat_index;
+	int pmt_index;
 }stream;
 int parseOneTS(uint8_t* buf, stream* st, LiveM3u8* livem3u8); 
 void* segmenter(void*);
